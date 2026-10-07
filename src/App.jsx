@@ -1,0 +1,24 @@
+import { useEffect, useState } from 'react';
+const chapters = [
+ {name:'Суть',label:'ОСНОВЫ',lines:['Дизайн','начинается','с человека.'],body:'Продуктовый дизайн помогает людям решать задачи — а командам создавать полезные продукты.',image:'hero',alt:'Карандашный портрет человека, его потребности и набросок полезного приложения'},
+ {name:'Проблема',label:'ИССЛЕДОВАНИЕ',lines:['Сначала','понять','почему.'],body:'Наблюдаем, слушаем и изучаем контекст. Ищем реальную задачу человека, прежде чем придумывать решение.',note:'«Хочу быстрее записаться к врачу» — задача. «Добавьте кнопку» — только гипотеза.',image:'research',alt:'Интервью с пользователем и заметки о его пути'},
+ {name:'Решение',label:'ПРОЕКТИРОВАНИЕ',lines:['От вопроса','к понятному','решению.'],body:'Собираем сценарий, делаем наброски и прототип. Каждый шаг должен приближать человека к его цели.',note:'Например: выбрать врача → найти время → подтвердить запись.',image:'prototype',alt:'Руки дизайнера раскладывают бумажные прототипы интерфейса'},
+ {name:'Проверка',label:'ТЕСТИРОВАНИЕ',lines:['Проверить,','а не просто','поверить.'],body:'Даём людям задачу и наблюдаем за действиями. Смотрим, где они справляются, а где решение нужно улучшить.',note:'Не «нравится ли экран?», а «получилось ли записаться без помощи?».',image:'testing',alt:'Пользователь тестирует прототип, исследователь наблюдает'},
+ {name:'Развитие',label:'ПОСЛЕ ЗАПУСКА',lines:['Хороший','дизайн всегда','в процессе.'],body:'Запуск — начало следующего цикла. Изучаем обратную связь и результаты, выбираем, что улучшить, и проверяем снова.',note:'Понять → создать → проверить → улучшить. Польза для человека остаётся ориентиром.',image:'growth',alt:'Команда улучшает продукт на основе обратной связи'}
+];
+export function App(){
+ const [step,setStep]=useState(0),[finished,setFinished]=useState(false);
+ const move=target=>{setStep(Math.max(0,Math.min(4,target)));setFinished(false)};
+ useEffect(()=>{const handler=e=>{if(finished){if(e.key==='Escape')setFinished(false);if(e.key==='Tab'){const buttons=[...document.querySelectorAll('.finish button')];const first=buttons[0],last=buttons[buttons.length-1];if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus()}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus()}}return}if(e.altKey||e.ctrlKey||e.metaKey||['INPUT','TEXTAREA'].includes(e.target.tagName))return;if(e.key==='ArrowRight'&&step<4){e.preventDefault();move(step+1)}if(e.key==='ArrowLeft'&&step>0){e.preventDefault();move(step-1)}};window.addEventListener('keydown',handler);return()=>window.removeEventListener('keydown',handler)},[step,finished]);
+ useEffect(()=>{document.title=`${chapters[step].name} — design notes`},[step]);
+ const chapter=chapters[step];
+ return <div className="story">
+ <header className="masthead"><span className="wordmark">design notes</span><span className="masthead-caption">Коротко о продуктовом дизайне</span></header>
+ <main className={`chapter chapter-${step+1}`} key={step}>
+ <div className="copy"><p className="eyebrow"><span>{String(step+1).padStart(2,'0')} /</span> {chapter.label}</p><h1>{chapter.lines.map((line,i)=><span className={i===2?'marked':''} key={line}>{line}</span>)}</h1><p className="intro">{chapter.body}</p>{chapter.note&&<p className="example">{chapter.note}</p>}</div>
+ <figure className="illustration"><img src={`/assets/${chapter.image}.webp`} alt={chapter.alt} fetchPriority={step===0?'high':'auto'}/></figure>
+ <span className="ghost-number" aria-hidden="true">{String(step+1).padStart(2,'0')}</span></main>
+ <footer className="footer"><nav className="progress" aria-label="Главы истории">{chapters.map((item,i)=><button key={item.name} onClick={()=>move(i)} className={`step ${i===step?'active':''} ${i<step?'visited':''}`} aria-current={i===step?'step':undefined} aria-label={`${i+1}. ${item.name}`}><span className="step-dot"/><span className="step-text"><span className="step-number">{String(i+1).padStart(2,'0')}</span><span>{item.name}</span></span></button>)}</nav><div className="controls"><button className="back" disabled={step===0} onClick={()=>move(step-1)}>Назад</button><button className="next" onClick={()=>step<4?move(step+1):setFinished(true)}>{step===4?'Завершить':'Далее'}</button></div></footer>
+ {finished&&<div className="finish-backdrop"><section className="finish" role="dialog" aria-modal="true" aria-labelledby="finish-title"><p className="eyebrow"><span>05 / 05</span> ИСТОРИЯ ПРОЙДЕНА</p><h2 id="finish-title">Всё начинается<br/>с человека.</h2><p>Теперь ты знаешь основу продуктового дизайна: понять задачу, создать решение, проверить пользу и продолжать улучшать.</p><button className="next" autoFocus onClick={()=>move(0)}>Пройти ещё раз</button><button className="finish-close" onClick={()=>setFinished(false)}>Вернуться к финалу</button></section></div>}
+ </div>
+}
